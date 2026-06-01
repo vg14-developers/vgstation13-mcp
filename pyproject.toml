@@ -1,6 +1,6 @@
 [project]
 name = "ss13-mcp"
-version = "0.2.0"
+version = "0.3.0"
 description = "Local MCP server exposing any SS13 fork's source and assets to AI coding agents"
 readme = "README.md"
 license = { text = "MIT" }
