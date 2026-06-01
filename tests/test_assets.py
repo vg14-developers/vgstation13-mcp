@@ -140,9 +140,7 @@ def test_convert_dmi_gates_until_approved(fixture_snapshot):
     assert out["resolved_license"] == "CC-BY-SA-3.0"
     assert out["effective_license"] == "CC-BY-SA-3.0"
     assert set(out["states"]) == {"idle", "active", "walk"}
-    assert out["source_url"].startswith(
-        "https://github.com/vgstation-coders/vgstation13/blob/"
-    )
+    assert out["source_url"].startswith("https://github.com/vgstation-coders/vgstation13/blob/")
     from ss13_mcp import cache
 
     assert not cache.is_hit("icons/test.dmi", None)

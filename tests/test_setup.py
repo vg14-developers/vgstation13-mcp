@@ -251,9 +251,7 @@ def test_setup_persists_repo_url_on_clone(empty_snapshot, tmp_path, monkeypatch)
 
 
 def test_setup_reads_repo_url_from_existing_checkout(empty_snapshot, monkeypatch):
-    monkeypatch.setattr(
-        setup_mod, "_git_remote_url", lambda _p: "https://github.com/foo/bar.git"
-    )
+    monkeypatch.setattr(setup_mod, "_git_remote_url", lambda _p: "https://github.com/foo/bar.git")
     result = setup_mod.setup(str(FIXTURE_SS13))
     assert result["configured"] is True
     cfg = json.loads(config_path().read_text())

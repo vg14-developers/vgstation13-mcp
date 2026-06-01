@@ -29,8 +29,7 @@ try:
     _PATTERNS = _load_patterns()
 except FileNotFoundError as exc:  # pragma: no cover - packaging guard
     raise RuntimeError(
-        "ss13_mcp: bundled data/repository-licenses.json is missing from the "
-        "installed package"
+        "ss13_mcp: bundled data/repository-licenses.json is missing from the " "installed package"
     ) from exc
 
 
