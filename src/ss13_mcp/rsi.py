@@ -52,7 +52,14 @@ def _state_to_rsi(state: DmiState, cells: list[Image.Image]) -> tuple[dict, Imag
     return meta, out
 
 
-def write_rsi(dmi: Dmi, out_dir: Path, state_filter: str | None = None) -> None:
+def write_rsi(
+    dmi: Dmi,
+    out_dir: Path,
+    state_filter: str | None = None,
+    *,
+    license: str | None = None,
+    copyright: str | None = None,
+) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     meta_states = []
     used: set[str] = set()
@@ -69,11 +76,11 @@ def write_rsi(dmi: Dmi, out_dir: Path, state_filter: str | None = None) -> None:
         meta_entry, sheet = _state_to_rsi(s, cells)
         sheet.save(out_dir / f"{safe}.png", format="PNG")
         meta_states.append(meta_entry)
-    meta = {
-        "version": 1,
-        "license": "CC-BY-SA-3.0",
-        "copyright": "Ported from SS13",
-        "size": {"x": dmi.width, "y": dmi.height},
-        "states": meta_states,
-    }
+    meta: dict = {"version": 1}
+    if license is not None:
+        meta["license"] = license
+    if copyright is not None:
+        meta["copyright"] = copyright
+    meta["size"] = {"x": dmi.width, "y": dmi.height}
+    meta["states"] = meta_states
     (out_dir / "meta.json").write_text(json.dumps(meta, indent=2))

@@ -49,6 +49,40 @@ def write_config(cfg: dict) -> None:
     config_path().write_text(json.dumps(cfg, indent=2))
 
 
+def approvals_path() -> Path:
+    return snapshot_dir() / "license_approvals.json"
+
+
+def load_approvals() -> dict:
+    """Persisted {repo: {resolved_class: approved_effective_license_or_null}}."""
+    p = approvals_path()
+    if not p.exists():
+        return {}
+    try:
+        return json.loads(p.read_text())
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _save_approvals(data: dict) -> None:
+    snapshot_dir().mkdir(parents=True, exist_ok=True)
+    approvals_path().write_text(json.dumps(data, indent=2))
+
+
+def is_license_approved(repo: str, resolved_class: str) -> bool:
+    return resolved_class in load_approvals().get(repo, {})
+
+
+def approved_license(repo: str, resolved_class: str) -> str | None:
+    return load_approvals().get(repo, {}).get(resolved_class)
+
+
+def record_approval(repo: str, resolved_class: str, effective_license: str | None) -> None:
+    data = load_approvals()
+    data.setdefault(repo, {})[resolved_class] = effective_license
+    _save_approvals(data)
+
+
 def ss13_dir() -> Path:
     """Path to the user's SS13 checkout. Env var wins for tests/overrides."""
     env = os.environ.get("SS13_PATH")

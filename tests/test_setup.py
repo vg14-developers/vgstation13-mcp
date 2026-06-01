@@ -239,3 +239,22 @@ def test_setup_fails_fast_when_probe_fails(monkeypatch, tmp_path):
     with pytest.raises(RuntimeError, match="failed its version probe"):
         setup_mod.setup(str(missing), clone_if_missing=True, fork="vg")
     assert not clone_called, "probe must run before clone so we fail fast"
+
+
+def test_setup_persists_repo_url_on_clone(empty_snapshot, tmp_path, monkeypatch):
+    monkeypatch.setattr(setup_mod.shutil, "which", lambda _: "/usr/bin/git")
+    monkeypatch.setattr(setup_mod, "_clone", lambda url, sha, dest: "deadbeef")
+    fresh = tmp_path / "fresh"
+    setup_mod.setup(str(fresh), clone_if_missing=True, fork="vg")
+    cfg = json.loads(config_path().read_text())
+    assert cfg["repo_url"] == "https://github.com/vgstation-coders/vgstation13.git"
+
+
+def test_setup_reads_repo_url_from_existing_checkout(empty_snapshot, monkeypatch):
+    monkeypatch.setattr(
+        setup_mod, "_git_remote_url", lambda _p: "https://github.com/foo/bar.git"
+    )
+    result = setup_mod.setup(str(FIXTURE_SS13))
+    assert result["configured"] is True
+    cfg = json.loads(config_path().read_text())
+    assert cfg["repo_url"] == "https://github.com/foo/bar.git"

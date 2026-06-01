@@ -15,6 +15,10 @@ and `icons/` dirs). Ships with shortcuts for **vg**, **tg**, **paradise**,
   vars, fuzzy path lookup), built from a vendored Rust binary (`dm-dump`) that
   uses SpacemanDMM's `dreammaker` parser crate.
 - **Assets:** on-demand DMI → Robust SS14 RSI conversion with disk-cached results.
+  Each RSI is stamped with the source asset's real license (resolved per-path from
+  RSIEdit's `repository-licenses.json`, e.g. `goon/icons/*` → `CC-BY-NC-SA-3.0`),
+  not a hardcoded value. The first conversion of a new license asks for human
+  approval; approval is per-license and persists, so batches are approved once.
 
 ## Install
 
@@ -106,6 +110,9 @@ All optional — defaults work out of the box.
 | `SS13_SNAPSHOT_DIR` | platform cache dir | Where the DM index + config live. |
 | `SS13_CACHE_DIR` | platform cache dir | Where DMI→RSI conversions are cached. |
 | `SS13_DM_DUMP_PATH` | downloaded | Override the `dm-dump` binary location. |
+
+Asset-license approvals are recorded in `<snapshot>/license_approvals.json`
+(keyed by repo + resolved license). Delete it to re-vet licenses from scratch.
 
 ## Building dm-dump
 
