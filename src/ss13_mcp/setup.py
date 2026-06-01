@@ -150,6 +150,24 @@ def _git_head_sha(path: Path) -> str | None:
         return None
 
 
+def _git_remote_url(path: Path) -> str | None:
+    """Best-effort origin URL of an existing checkout; None if unavailable."""
+    if not (path / ".git").exists():
+        return None
+    try:
+        result = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            cwd=path,
+            check=True,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout.strip() or None
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+
+
 def _resolve_repo_url(fork: str | None, repo_url: str | None) -> tuple[str, str]:
     """Returns (repo_url, fork_label). Exactly one of fork/repo_url must be given."""
     if fork and repo_url:
@@ -273,6 +291,7 @@ def setup(
     _probe_dm_dump(dm_dump)
 
     fork_label = "unknown"
+    repo_url_resolved: str | None = None
     if ss13.exists() and any(ss13.iterdir()):
         if not _looks_like_ss13(ss13):
             raise ValueError(
@@ -284,6 +303,7 @@ def setup(
         actual_sha = _git_head_sha(ss13) or "unknown"
         # Preserve fork label across re-runs that just reuse an existing checkout.
         fork_label = fork or "custom"
+        repo_url_resolved = _git_remote_url(ss13) or repo_url
         _step(f"using existing SS13 checkout at {ss13} (HEAD={actual_sha[:8]})")
     else:
         if not clone_if_missing:
@@ -295,6 +315,7 @@ def setup(
         if not shutil.which("git"):
             raise RuntimeError("git is required to clone but was not found on PATH")
         url, fork_label = _resolve_repo_url(fork, repo_url)
+        repo_url_resolved = url
         clone_sha = sha or os.environ.get("SS13_SHA")
         actual_sha = _clone(url, clone_sha, ss13)
 
@@ -310,6 +331,7 @@ def setup(
         "ss13_path": str(ss13),
         "ss13_sha": actual_sha,
         "fork": fork_label,
+        "repo_url": repo_url_resolved,
         "bumped_at": datetime.now(timezone.utc).isoformat(),
         "dm_dump_path": str(dm_dump),
     }

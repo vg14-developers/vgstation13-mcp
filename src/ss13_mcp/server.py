@@ -6,6 +6,7 @@ from ss13_mcp.resources import read_resource as _read_resource
 from ss13_mcp.setup import setup as _setup
 from ss13_mcp.tools.assets import convert_dmi as _convert_dmi
 from ss13_mcp.tools.assets import list_dmi_states as _list_dmi_states
+from ss13_mcp.tools.assets import preview_asset_licenses as _preview_asset_licenses
 from ss13_mcp.tools.assets import read_asset as _read_asset
 from ss13_mcp.tools.dm_index import find_proc as _find_proc
 from ss13_mcp.tools.dm_index import find_var as _find_var
@@ -125,9 +126,43 @@ def list_dmi_states(dmi_path: str) -> list[dict]:
 
 
 @mcp.tool()
-def convert_dmi(dmi_path: str, state: str | None = None) -> dict:
-    """Convert a DMI to a Robust SS14 RSI. Returns local path + URL."""
-    return _convert_dmi(dmi_path, state=state)
+def preview_asset_licenses(dmi_paths: list[str]) -> dict:
+    """Resolve the licenses of many DMIs WITHOUT converting, grouped by license.
+
+    Call this before converting a batch so you can show the user a single
+    consolidated approval prompt (e.g. "98 files CC-BY-SA-3.0, 2 CC-BY-NC-SA-3.0")
+    instead of asking per file.
+    """
+    return _preview_asset_licenses(dmi_paths)
+
+
+@mcp.tool()
+def convert_dmi(
+    dmi_path: str,
+    state: str | None = None,
+    license_confirmed: bool = False,
+    license_override: str | None = None,
+) -> dict:
+    """Convert a DMI to a Robust SS14 RSI, stamping the source's real license.
+
+    The license is resolved from the asset's source path (RSIEdit's
+    repository-licenses map). To avoid mislabeling, the FIRST conversion of a
+    not-yet-approved license returns status="needs_license_approval" and writes
+    nothing: show the user the resolved license + source_url and get their OK.
+    Then re-call with license_confirmed=true. If the resolved license is wrong or
+    unknown, pass license_override="<SPDX/CC id>" with license_confirmed=true.
+
+    Approval is per-license (not per-file): once a license is approved it applies
+    to every asset that resolves to it, now and across sessions, so a 100-file
+    batch is approved once. Use preview_asset_licenses to approve a whole batch in
+    one prompt.
+    """
+    return _convert_dmi(
+        dmi_path,
+        state=state,
+        license_confirmed=license_confirmed,
+        license_override=license_override,
+    )
 
 
 @mcp.resource("ss13://source/{path}")

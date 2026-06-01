@@ -85,6 +85,7 @@ def fixture_snapshot(monkeypatch, tmp_path):
                 "ss13_path": str(FIXTURE_SS13),
                 "ss13_sha": FIXTURE_SHA,
                 "fork": "vg",
+                "repo_url": "https://github.com/vgstation-coders/vgstation13.git",
                 "bumped_at": datetime.now(timezone.utc).isoformat(),
             }
         )
