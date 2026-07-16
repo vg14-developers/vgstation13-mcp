@@ -17,7 +17,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
-  "mcp==1.23.0",
+  "mcp==1.27.2",
   "pillow==12.2.0",
   "platformdirs==4.3.6",
 ]
